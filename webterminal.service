@@ -1,0 +1,18 @@
+[Unit]
+Description=Web Terminal (browser-based shell)
+After=network.target
+
+[Service]
+# User that shell sessions run as. Use root only if you truly need full
+# system control from the browser; otherwise prefer a normal user + sudo.
+User=pi
+Environment=WT_USER=admin
+Environment=WT_PASS=change-me
+ExecStart=/usr/local/bin/webterminal -addr :8080 -shell /bin/bash
+Restart=always
+RestartSec=3
+# Keep memory bounded on 512MB devices.
+MemoryMax=64M
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Web Terminal</title>
+  <link rel="stylesheet" href="vendor/xterm.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='3' fill='%23161b22'/><text x='2' y='12' font-size='10' fill='%233fb950' font-family='monospace'>&gt;_</text></svg>">
+</head>
+<body>
+  <header id="bar">
+    <div class="left">
+      <span id="status-dot" class="dot"></span>
+      <span id="hostname">webterminal</span>
+    </div>
+    <div class="right">
+      <button id="select-mode" title="Selection mode: shows terminal text so you can long-press select (for mobile)">Select</button>
+      <button id="copy" title="Copy selection (or just select text — it auto-copies)">Copy</button>
+      <button id="paste" title="Paste (Ctrl+V also works)">Paste</button>
+      <button id="font-minus" title="Smaller font">A−</button>
+      <button id="font-plus" title="Larger font">A+</button>
+      <button id="kbd" title="Toggle shortcut keys">⌨</button>
+    </div>
+  </header>
+  <div id="keys">
+    <button data-key="esc">Esc</button>
+    <button data-key="tab">Tab</button>
+    <button id="mod-ctrl" title="Sticky: press Ctrl then a key">Ctrl</button>
+    <button id="mod-alt" title="Sticky: press Alt then a key">Alt</button>
+    <button data-key="up">↑</button>
+    <button data-key="down">↓</button>
+    <button data-key="left">←</button>
+    <button data-key="right">→</button>
+    <button data-key="home">Home</button>
+    <button data-key="end">End</button>
+    <button data-key="ctrl-c">Ctrl+C</button>
+    <button data-key="ctrl-d">Ctrl+D</button>
+  </div>
+  <div id="banner" hidden></div>
+  <div id="terminal"></div>
+  <div id="select-overlay" hidden>
+    <div class="overlay-bar">
+      <span>Long-press to select, then copy. </span>
+      <button id="copy-all">Copy all</button>
+      <button id="overlay-close">✕ Close</button>
+    </div>
+    <pre id="overlay-text"></pre>
+  </div>
+  <script src="vendor/xterm.js"></script>
+  <script src="vendor/addon-fit.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

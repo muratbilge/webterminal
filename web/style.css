@@ -1,0 +1,126 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  background: #0d1117;
+  overflow: hidden;
+  font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+body { display: flex; flex-direction: column; }
+
+#bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 34px;
+  padding: 0 10px;
+  background: #161b22;
+  border-bottom: 1px solid #21262d;
+  color: #c9d1d9;
+  font-size: 13px;
+  flex: none;
+  user-select: none;
+}
+
+#bar .left { display: flex; align-items: center; gap: 8px; }
+#bar .right { display: flex; gap: 4px; }
+
+#bar button {
+  background: #21262d;
+  color: #c9d1d9;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+#bar button:hover { background: #30363d; }
+
+.dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: #f85149;           /* red = disconnected */
+  transition: background .3s;
+}
+.dot.connected { background: #3fb950; }
+.dot.connecting { background: #d29922; }
+
+#keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px 8px;
+  background: #10151c;
+  border-bottom: 1px solid #21262d;
+  flex: none;
+  user-select: none;
+}
+#keys.hidden { display: none; }
+#keys button {
+  background: #21262d;
+  color: #c9d1d9;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-family: monospace;
+  cursor: pointer;
+  min-width: 38px;
+}
+#keys button:hover { background: #30363d; }
+#keys button.active { background: #1f6feb; border-color: #388bfd; }
+
+#banner {
+  background: #6e2c2c;
+  color: #ffdcd7;
+  text-align: center;
+  font-size: 13px;
+  padding: 4px;
+  flex: none;
+}
+
+#terminal { flex: 1; min-height: 0; padding: 4px; }
+#terminal .xterm { height: 100%; }
+
+#select-overlay[hidden] { display: none; }
+#select-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  background: #0d1117;
+}
+#select-overlay .overlay-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: #1f6feb;
+  color: #fff;
+  font-size: 13px;
+  flex: none;
+}
+#select-overlay .overlay-bar span { flex: 1; }
+#select-overlay .overlay-bar button {
+  background: rgba(255,255,255,.15);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.4);
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+#overlay-text {
+  flex: 1;
+  overflow: auto;
+  margin: 0;
+  padding: 8px;
+  color: #c9d1d9;
+  font: 14px/1.35 "DejaVu Sans Mono", Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+  user-select: text;
+  -webkit-user-select: text;
+}
