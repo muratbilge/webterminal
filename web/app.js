@@ -29,6 +29,23 @@
   var retryDelay = 500;
   var closedByServer = false;
 
+  // Per-tab session token: the server keeps the shell alive for a grace
+  // period after disconnect, so a refresh (sessionStorage survives it)
+  // re-attaches to the same shell. Each tab gets its own session.
+  var sessId = sessionStorage.getItem("wt-session");
+  if (!sessId) {
+    var rnd = new Uint8Array(16);
+    if (window.crypto && window.crypto.getRandomValues) {
+      window.crypto.getRandomValues(rnd);
+    } else {
+      for (var ri = 0; ri < rnd.length; ri++) rnd[ri] = Math.floor(Math.random() * 256);
+    }
+    sessId = Array.prototype.map.call(rnd, function (b) {
+      return ("0" + b.toString(16)).slice(-2);
+    }).join("");
+    sessionStorage.setItem("wt-session", sessId);
+  }
+
   function setStatus(state, msg) {
     statusDot.className = "dot " + state;
     if (msg) {
@@ -51,7 +68,7 @@
     // Keep a local reference: handlers must only act if this socket is still
     // the current one, or late events from an abandoned socket would inject
     // stale output, close the healthy replacement, or multiply reconnects.
-    var sock = new WebSocket(proto + location.host + location.pathname.replace(/[^/]*$/, "") + "ws");
+    var sock = new WebSocket(proto + location.host + location.pathname.replace(/[^/]*$/, "") + "ws?session=" + sessId);
     ws = sock;
     sock.binaryType = "arraybuffer";
 
@@ -59,6 +76,9 @@
       if (sock !== ws) { sock.close(); return; }
       retryDelay = 500;
       closedByServer = false;
+      // The server replays recent output on attach; clear the terminal so
+      // the replay isn't appended to what's already displayed.
+      term.reset();
       setStatus("connected", null);
       fit.fit();
       sendResize();
@@ -75,6 +95,11 @@
       if (ev.reason === "shell exited") {
         closedByServer = true;
         setStatus("", "Shell exited — press Enter to start a new session.");
+        return;
+      }
+      if (ev.reason === "attached elsewhere") {
+        closedByServer = true; // Enter re-attaches (stealing the session back)
+        setStatus("", "Session was opened in another window — press Enter to take it back.");
         return;
       }
       setStatus("", "Disconnected — reconnecting…");

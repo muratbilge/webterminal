@@ -7,6 +7,9 @@ and anything newer.
 
 - ~6.5 MB binary, ~10 MB RAM at idle, zero dependencies on the device
 - Full terminal control: colors, resize, interactive programs (htop, nano, vim)
+- **Sessions survive page refreshes and network drops**: the shell keeps
+  running on the Pi and the browser re-attaches with recent output replayed
+  (grace period configurable via `-grace`, default 5 minutes)
 - Auto-reconnect, adjustable font size
 - Copy & paste that works over plain HTTP, mobile selection mode,
   shortcut key bar (Esc, Tab, Ctrl, arrows…)
@@ -106,6 +109,7 @@ sudo rm /etc/systemd/system/webterminal.service /usr/local/bin/webterminal
 | `-shell` | `$SHELL` or `/bin/bash` | Shell to run (started as a login shell) |
 | `-user` | env `WT_USER` | Basic auth username — **required** |
 | `-pass` | env `WT_PASS` | Basic auth password — **required** |
+| `-grace` | `5m` | How long a disconnected session keeps running before it is killed (`0` = immediately, `30s`, `1h`, …) |
 
 The server refuses to start without credentials.
 
@@ -132,7 +136,11 @@ suspend, etc.
 - **Selecting text inside `htop`/`vim`/`mc`**: those programs capture the
   mouse — hold **Shift** while dragging, or use the **Select** button.
 - If the shell exits (`exit` or Ctrl+D), press **Enter** to start a new session.
-- Multiple browser tabs = multiple independent shell sessions.
+- **Refreshing the page keeps your session**: the shell stays alive on the
+  device for the `-grace` window (default 5 min) and the terminal re-attaches
+  with recent output replayed. Long-running commands keep running meanwhile.
+- Multiple browser tabs = multiple independent shell sessions (each tab has
+  its own session; a duplicated tab shares one and steals the attachment).
 - After updating, hard-refresh the page (**Ctrl+F5**) so the browser drops
   its cached UI.
 

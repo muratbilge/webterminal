@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 //go:embed web
@@ -22,6 +23,7 @@ func main() {
 	shell := flag.String("shell", defaultShell(), "shell to run (started as a login shell)")
 	user := flag.String("user", os.Getenv("WT_USER"), "basic auth username (env WT_USER)")
 	pass := flag.String("pass", os.Getenv("WT_PASS"), "basic auth password (env WT_PASS)")
+	grace := flag.Duration("grace", 5*time.Minute, "how long a disconnected session keeps running before it is killed (0 = kill immediately)")
 	flag.Parse()
 
 	if *user == "" || *pass == "" {
@@ -40,7 +42,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.Handle("/", http.FileServer(http.FS(staticFS)))
-	mux.HandleFunc("/ws", terminalHandler(*shell))
+	mux.HandleFunc("/ws", terminalHandler(*shell, *grace))
 
 	handler := basicAuth(*user, *pass, mux)
 
