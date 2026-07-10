@@ -8,67 +8,138 @@ and anything newer.
 - ~6.5 MB binary, ~10 MB RAM at idle, zero dependencies on the device
 - Full terminal control: colors, resize, interactive programs (htop, nano, vim)
 - Auto-reconnect, adjustable font size
-- Copy & paste that works over plain HTTP: drag-select auto-copies
-  (PuTTY-style), Ctrl+V pastes; Copy/Paste buttons in the top bar
-- **Select** button: shows the terminal text as a plain page so mobile
-  long-press selection works (xterm.js has no native touch selection)
-- Shortcut key bar (toggle with ⌨): Esc, Tab, sticky Ctrl/Alt, arrows,
-  Home/End, Ctrl+C, Ctrl+D — for phones/tablets and quick access
-- HTTP Basic Auth (see security notes below)
+- Copy & paste that works over plain HTTP, mobile selection mode,
+  shortcut key bar (Esc, Tab, Ctrl, arrows…)
+- HTTP Basic Auth (see [security notes](#security-notes--read-this))
 
 Full dependency list, compatibility matrix, and troubleshooting:
 **[DEPENDENCIES.md](DEPENDENCIES.md)**
 
-## Which binary for which device?
+---
 
-| Device | OS | Binary |
+## Install
+
+### 1. Pick your binary
+
+| Your device | OS | Download |
 |---|---|---|
-| Pi 1, Pi Zero/Zero W, RevPi Core 1 (CM1) | Raspberry Pi OS 32-bit | `webterminal-armv6` |
-| RevPi Core 3 / Connect (CM3/CM3+/CM4S) | Revolution Pi OS (32-bit armhf) | `webterminal-armv6` |
-| Pi 2/3/4/5, Zero 2 | Raspberry Pi OS 32-bit | `webterminal-armv6` |
-| Pi 3/4/5, Zero 2 | Raspberry Pi OS 64-bit | `webterminal-arm64` |
+| Pi 1, Pi Zero/Zero W, **all Revolution Pi models**, Pi 2–5 | 32-bit (Raspberry Pi OS / Revolution Pi OS) | `webterminal-armv6` |
+| Pi 3/4/400/5, Zero 2 W | 64-bit Raspberry Pi OS | `webterminal-arm64` |
+| x86-64 Linux machine | any | `webterminal-amd64` |
 
-`webterminal-armv6` runs on **every** Pi with a 32-bit OS — ARMv6 instructions
-execute fine on ARMv7/v8 CPUs. It is fully static (no glibc dependency), so it
-also works on very old Raspbian images.
+Not sure? Run `getconf LONG_BIT` on the device: `32` → armv6, `64` → arm64.
 
-## Build (on your PC — Go required, nothing needed on the Pi)
+### 2. Download and install (run on the Pi)
 
 ```sh
-make armv6          # -> webterminal-armv6
-make arm64          # -> webterminal-arm64 (optional)
+wget https://github.com/muratbilge/webterminal/releases/latest/download/webterminal-armv6
+sudo install -m755 webterminal-armv6 /usr/local/bin/webterminal
 ```
 
-## Quick try
+(Substitute the binary name from the table above. To verify the download:
+also fetch `SHA256SUMS.txt` and run `sha256sum -c SHA256SUMS.txt --ignore-missing`.)
+
+### 3. First run
 
 ```sh
-./webterminal -user admin -pass secret -addr :8080
-# open http://<pi-address>:8080 and log in
+webterminal -user admin -pass YOUR_PASSWORD -addr :8080
 ```
 
-Flags: `-addr` (default `:8080`), `-shell` (default `$SHELL` or `/bin/bash`),
-`-user`/`-pass` (or env `WT_USER`/`WT_PASS`). The server refuses to start
-without credentials.
+Open `http://<pi-address>:8080` in any browser, log in — you have a shell.
 
-## Install as a service
-
-Edit `webterminal.service` first: set `User=` (which Unix account the shell
-runs as) and change `WT_PASS`. Then:
+### 4. Install as a service (start on boot)
 
 ```sh
-scp webterminal-armv6 pi@<address>:/tmp/
-scp webterminal.service pi@<address>:/tmp/
-ssh pi@<address>
-  sudo install -m755 /tmp/webterminal-armv6 /usr/local/bin/webterminal
-  sudo install -m644 /tmp/webterminal.service /etc/systemd/system/
-  sudo systemctl daemon-reload
-  sudo systemctl enable --now webterminal
+wget https://github.com/muratbilge/webterminal/releases/latest/download/webterminal.service
+nano webterminal.service    # set User= (which account the shell runs as) and WT_PASS
+sudo install -m644 webterminal.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now webterminal
 ```
 
-Or in one step from this directory: `make deploy PI=pi@<address>`.
+Check it: `systemctl status webterminal`. Logs: `journalctl -u webterminal`.
 
-On Revolution Pi, port 80/443 are used by the built-in web services
+> Very old Raspbian **Wheezy** (no systemd): start it from `/etc/rc.local`
+> instead — see [DEPENDENCIES.md](DEPENDENCIES.md).
+
+### Updating
+
+Download the new binary, then:
+
+```sh
+sudo install -m755 webterminal-armv6 /usr/local/bin/webterminal
+sudo systemctl restart webterminal
+```
+
+### Uninstall
+
+```sh
+sudo systemctl disable --now webterminal
+sudo rm /etc/systemd/system/webterminal.service /usr/local/bin/webterminal
+```
+
+---
+
+## Usage
+
+### Command-line options
+
+| Flag | Default | Meaning |
+|---|---|---|
+| `-addr` | `:8080` | Listen address, e.g. `:8081` or `192.168.1.10:8080` |
+| `-shell` | `$SHELL` or `/bin/bash` | Shell to run (started as a login shell) |
+| `-user` | env `WT_USER` | Basic auth username — **required** |
+| `-pass` | env `WT_PASS` | Basic auth password — **required** |
+
+The server refuses to start without credentials.
+
+### The interface
+
+| Control | What it does |
+|---|---|
+| Green/red dot (top left) | Connection status; reconnects automatically if the network drops |
+| **Select** | Mobile copy: shows the terminal text as a plain page — long-press to select, or **Copy all** |
+| **Copy** | Copies the current terminal selection (desktop: just drag-select — it auto-copies, PuTTY-style; `Ctrl+Shift+C` also works) |
+| **Paste** | Pastes the clipboard (`Ctrl+V` also works; over plain HTTP the button opens a paste box — a browser security rule) |
+| **A− / A+** | Font size (remembered per browser) |
+| **⌨** | Toggles the shortcut key bar |
+
+### Shortcut key bar
+
+For phones/tablets and quick access: **Esc**, **Tab**, arrows, **Home/End**,
+one-tap **Ctrl+C** / **Ctrl+D**, and sticky **Ctrl** / **Alt** — tap Ctrl
+(it lights up), then press a letter: Ctrl→`r` = history search, Ctrl→`z` =
+suspend, etc.
+
+### Tips
+
+- **Selecting text inside `htop`/`vim`/`mc`**: those programs capture the
+  mouse — hold **Shift** while dragging, or use the **Select** button.
+- If the shell exits (`exit` or Ctrl+D), press **Enter** to start a new session.
+- Multiple browser tabs = multiple independent shell sessions.
+- After updating, hard-refresh the page (**Ctrl+F5**) so the browser drops
+  its cached UI.
+
+---
+
+## Build from source
+
+Needs only Go ≥ 1.21 on your PC — nothing on the Pi, no Node.js, no Docker:
+
+```sh
+git clone https://github.com/muratbilge/webterminal.git
+cd webterminal
+make armv6            # -> webterminal-armv6 (all 32-bit Pis)
+make arm64            # -> webterminal-arm64 (64-bit OS)
+make local            # -> webterminal (your PC's architecture)
+```
+
+One-step deploy to a Pi over SSH: `make deploy PI=pi@192.168.1.50`
+
+On Revolution Pi, ports 80/443 are used by the built-in web services
 (piCtory/status pages); the default port 8080 avoids the conflict.
+
+---
 
 ## Security notes — read this
 
@@ -84,9 +155,9 @@ On Revolution Pi, port 80/443 are used by the built-in web services
 
 ## Compatibility problems this design avoids
 
-- **ARMv6 vs ARMv7**: many prebuilt tools (and Docker images) are ARMv7-only
-  and crash with "illegal instruction" on Pi 1/Zero. This binary is built with
-  `GOARM=6`.
+- **ARMv6 trap**: most prebuilt tools (and Docker images) are ARMv7-only
+  and crash with "illegal instruction" on Pi 1/Zero/RevPi Core 1. This binary
+  is built with `GOARM=6`.
 - **Node.js**: official Node builds dropped ARMv6 years ago, which rules out
   Wetty and similar Node-based terminals on old Pis. No Node here.
 - **Docker on ARMv6**: most images no longer publish `arm/v6` variants.
