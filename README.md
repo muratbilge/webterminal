@@ -131,6 +131,13 @@ one-tap **Ctrl+C** / **Ctrl+D**, and sticky **Ctrl** / **Alt** — tap Ctrl
 (it lights up), then press a letter: Ctrl→`r` = history search, Ctrl→`z` =
 suspend, etc.
 
+### Scrolling
+
+- Desktop: mouse wheel or **Shift+PageUp/PageDown**.
+- Mobile: swipe up/down on the terminal.
+- Inside full-screen programs (`htop`, `less`, `vim`) there is no scrollback
+  — that's how terminals work; use the program's own navigation keys.
+
 ### Tips
 
 - **Selecting text inside `htop`/`vim`/`mc`**: those programs capture the

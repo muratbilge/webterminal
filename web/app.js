@@ -273,6 +273,31 @@
     resizeTimer = setTimeout(function () { fit.fit(); }, 100);
   });
 
+  // xterm.js has no built-in touch scrolling (wheel only), so translate
+  // vertical swipes on the terminal into scrollback movement. Uses the real
+  // cell height so one finger-height ≈ one line.
+  (function () {
+    var touchY = null;
+    var el = document.getElementById("terminal");
+    function cellHeight() {
+      var rows = el.querySelector(".xterm-rows");
+      return rows && term.rows ? rows.clientHeight / term.rows : 17;
+    }
+    el.addEventListener("touchstart", function (e) {
+      if (e.touches.length === 1) touchY = e.touches[0].clientY;
+    }, { passive: true });
+    el.addEventListener("touchmove", function (e) {
+      if (touchY === null || e.touches.length !== 1) return;
+      var dy = touchY - e.touches[0].clientY;
+      var lines = Math.trunc(dy / cellHeight());
+      if (lines !== 0) {
+        term.scrollLines(lines);
+        touchY = e.touches[0].clientY;
+      }
+    }, { passive: true });
+    el.addEventListener("touchend", function () { touchY = null; }, { passive: true });
+  })();
+
   function setFont(delta) {
     fontSize = Math.max(FONT_MIN, Math.min(FONT_MAX, fontSize + delta));
     term.options.fontSize = fontSize;
