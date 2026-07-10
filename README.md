@@ -47,7 +47,20 @@ webterminal -user admin -pass YOUR_PASSWORD -addr :8080
 
 Open `http://<pi-address>:8080` in any browser, log in — you have a shell.
 
-### 4. Install as a service (start on boot)
+### 4a. Run without a service
+
+Nothing else is required — just run the command from step 3 whenever you need
+it. To keep it running after you close your SSH session:
+
+```sh
+nohup webterminal -user admin -pass YOUR_PASSWORD -addr :8080 >/dev/null 2>&1 &
+```
+
+Stop it with `pkill webterminal`. To start it automatically at boot without
+systemd, add that same line (using env vars for the credentials) to
+`/etc/rc.local` before the `exit 0`, or as a cron entry: `@reboot`.
+
+### 4b. Optional: install as a service (start on boot, auto-restart)
 
 ```sh
 wget https://github.com/muratbilge/webterminal/releases/latest/download/webterminal.service
