@@ -42,8 +42,11 @@ also fetch `SHA256SUMS.txt` and run `sha256sum -c SHA256SUMS.txt --ignore-missin
 ### 3. First run
 
 ```sh
-webterminal -user admin -pass YOUR_PASSWORD -addr :8080
+WT_USER=admin WT_PASS=YOUR_PASSWORD webterminal -addr :8080
 ```
+
+(Credentials can also be given as `-user`/`-pass` flags, but flags are visible
+to all local users in `ps` output — prefer the environment variables.)
 
 Open `http://<pi-address>:8080` in any browser, log in — you have a shell.
 
@@ -53,7 +56,7 @@ Nothing else is required — just run the command from step 3 whenever you need
 it. To keep it running after you close your SSH session:
 
 ```sh
-nohup webterminal -user admin -pass YOUR_PASSWORD -addr :8080 >/dev/null 2>&1 &
+WT_USER=admin WT_PASS=YOUR_PASSWORD nohup webterminal -addr :8080 >/dev/null 2>&1 &
 ```
 
 Stop it with `pkill webterminal`. To start it automatically at boot without
@@ -178,5 +181,4 @@ On Revolution Pi, ports 80/443 are used by the built-in web services
 - **Old glibc**: static build (`CGO_ENABLED=0`) has no libc dependency.
 - **Offline networks**: all frontend assets (xterm.js 5.5) are embedded in the
   binary — no CDN, works with no internet access.
-- **Low RAM**: works comfortably within 64 MB (`MemoryMax` in the unit file)
-  on 512 MB devices.
+- **Low RAM**: the server idles at ~10 MB, comfortable on 512 MB devices.

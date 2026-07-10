@@ -64,7 +64,6 @@ Check with: `getconf LONG_BIT` on the Pi.
 - Binary: ~6.5 MB on disk
 - RAM: ~10 MB idle + roughly 1–2 MB per open terminal session (plus whatever
   the shell/programs use)
-- The service file caps it at `MemoryMax=64M` — safe on a 512 MB Pi 1
 - CPU: negligible; even a Pi 1 handles multiple sessions
 
 ---

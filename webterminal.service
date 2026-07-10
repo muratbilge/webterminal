@@ -11,8 +11,6 @@ Environment=WT_PASS=change-me
 ExecStart=/usr/local/bin/webterminal -addr :8080 -shell /bin/bash
 Restart=always
 RestartSec=3
-# Keep memory bounded on 512MB devices.
-MemoryMax=64M
 
 [Install]
 WantedBy=multi-user.target

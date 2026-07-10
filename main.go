@@ -25,8 +25,13 @@ func main() {
 	flag.Parse()
 
 	if *user == "" || *pass == "" {
-		log.Fatal("refusing to start without credentials: set -user/-pass flags or WT_USER/WT_PASS env vars")
+		log.Fatal("refusing to start without credentials: set WT_USER/WT_PASS env vars (or -user/-pass flags)")
 	}
+	flag.Visit(func(f *flag.Flag) {
+		if f.Name == "pass" {
+			log.Print("warning: -pass on the command line is visible to all local users via ps; prefer the WT_PASS environment variable")
+		}
+	})
 
 	staticFS, err := fs.Sub(webFS, "web")
 	if err != nil {

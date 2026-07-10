@@ -2,6 +2,8 @@
 /webterminal
 /webterminal-armv6
 /webterminal-arm64
+/webterminal-amd64
+/SHA256SUMS.txt
 
 nohup.out
 *.log

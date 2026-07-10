@@ -48,10 +48,15 @@
   function connect() {
     setStatus("connecting", null);
     var proto = location.protocol === "https:" ? "wss://" : "ws://";
-    ws = new WebSocket(proto + location.host + location.pathname.replace(/[^/]*$/, "") + "ws");
-    ws.binaryType = "arraybuffer";
+    // Keep a local reference: handlers must only act if this socket is still
+    // the current one, or late events from an abandoned socket would inject
+    // stale output, close the healthy replacement, or multiply reconnects.
+    var sock = new WebSocket(proto + location.host + location.pathname.replace(/[^/]*$/, "") + "ws");
+    ws = sock;
+    sock.binaryType = "arraybuffer";
 
-    ws.onopen = function () {
+    sock.onopen = function () {
+      if (sock !== ws) { sock.close(); return; }
       retryDelay = 500;
       closedByServer = false;
       setStatus("connected", null);
@@ -60,11 +65,13 @@
       term.focus();
     };
 
-    ws.onmessage = function (ev) {
+    sock.onmessage = function (ev) {
+      if (sock !== ws) return;
       term.write(new Uint8Array(ev.data));
     };
 
-    ws.onclose = function (ev) {
+    sock.onclose = function (ev) {
+      if (sock !== ws) return;
       if (ev.reason === "shell exited") {
         closedByServer = true;
         setStatus("", "Shell exited — press Enter to start a new session.");
@@ -75,7 +82,7 @@
       retryDelay = Math.min(retryDelay * 2, 10000);
     };
 
-    ws.onerror = function () { ws.close(); };
+    sock.onerror = function () { sock.close(); };
   }
 
   var ctrlSticky = false, altSticky = false;
@@ -85,6 +92,7 @@
   function sendInput(data) {
     if (closedByServer) {
       if (data.indexOf("\r") !== -1) {
+        closedByServer = false; // clear now, not in onopen — blocks double-Enter duplicates
         term.reset();
         connect();
       }
